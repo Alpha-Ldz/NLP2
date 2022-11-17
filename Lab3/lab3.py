@@ -36,10 +36,12 @@ SEED = 42
 Here we will carry out the first part of the project
 """
 
-"""
-This function allows to download the dataset, it was retrieved directly from the official documentation 
-"""
 def download_dataset() -> str :
+  """
+  This function allows to download the dataset, it was retrieved directly from the official documentation 
+  """
+
+
   #### Just some code to print debug information to stdout
   logging.basicConfig(format='%(asctime)s - %(message)s',
                       datefmt='%Y-%m-%d %H:%M:%S',
@@ -55,32 +57,31 @@ def download_dataset() -> str :
 
 
 
-"""
-This function allows to load the dataset, it was retrieved directly from the official documentation
-"""
 def load_dataset(data_path: str) -> tuple:
+  """
+  This function allows to load the dataset, it was retrieved directly from the official documentation
+  """
+
   #### Provide the data_path where scifact has been downloaded and unzipped
   return GenericDataLoader(data_folder=data_path).load(split="test")
 
 
-
-""" 
-This function removes the rows with 0 values from the dataset representing 
-the relationship between the corpora and the queries.
-To do this, it uses the remove_zero_values function 
-"""
 def remove_unrevelant(d: dict) -> dict:
-    return {key: remove_zero_values(d[key]) for key in d}
+  """ 
+  This function removes the rows with 0 values from the dataset representing 
+  the relationship between the corpora and the queries.
+  To do this, it uses the remove_zero_values function 
+  """
+  return {key: remove_zero_values(d[key]) for key in d}
 
 def remove_zero_values(d: dict) -> dict:
-    return {key: value for key, value in d.items() if value != 0}
+  return {key: value for key, value in d.items() if value != 0}
 
 
-
-"""
-This function is used to identify texts that are related to a query
-"""
 def get_all_related_texts(qrels: dict) -> set:
+  """
+  This function is used to identify texts that are related to a query
+  """
   texts = set()
 
   for v in qrels.values():
@@ -89,15 +90,14 @@ def get_all_related_texts(qrels: dict) -> set:
   return texts
 
 
-
-"""
-This function is used to create the dataset requested by the instruction, 
-namely a corpus consisting of all the texts having a relation with the queries as well 
-as 100000 other texts
-
-In addition to that, this function encodes directly the texts thanks to our model that we have created beforehand
-"""
 def get_texts_rels_and_100K_unrel(corpus: dict, texts: set, model: SentenceTransformer, N:int =100000, SEED:int =-1) -> dict:
+  """
+  This function is used to create the dataset requested by the instruction, 
+  namely a corpus consisting of all the texts having a relation with the queries as well 
+  as 100000 other texts
+
+  In addition to that, this function encodes directly the texts thanks to our model that we have created beforehand
+  """
   if SEED != -1:
     random.seed(SEED)
 
@@ -122,10 +122,10 @@ def get_texts_rels_and_100K_unrel(corpus: dict, texts: set, model: SentenceTrans
 
 
 
-"""
-This function allows to encode the queries according to the model we have created
-"""
 def get_emb_queries(queries: dict, model: SentenceTransformer) -> tuple:
+  """
+  This function allows to encode the queries according to the model we have created
+  """
   emb_queries = {}
 
   with tqdm(total=(len(queries))) as pbar:
@@ -137,18 +137,18 @@ def get_emb_queries(queries: dict, model: SentenceTransformer) -> tuple:
 
 
 
-"""
-This function is used to find the average@k score which is calculated in this way:
-- First, we do a dot of each query between each text and get the score
-- We retrieve the k texts with the highest score
-- We make the sum of the successes
-- We divide by k to get the average
-
-It uses the get_k_score function to create the k_score and the dot_product function 
-to create the dot of each text for a query
-"""
-
 def get_k_average(emb_queries: dict, emb_texts: dict , qrels: dict ) -> dict:
+  """
+  This function is used to find the average@k score which is calculated in this way:
+  - First, we do a dot of each query between each text and get the score
+  - We retrieve the k texts with the highest score
+  - We make the sum of the successes
+  - We divide by k to get the average
+
+  It uses the get_k_score function to create the k_score and the dot_product function 
+  to create the dot of each text for a query
+  """
+
   rtn = {}
 
   with tqdm(total=(len(emb_queries))) as pbar:
@@ -165,6 +165,9 @@ def get_k_average(emb_queries: dict, emb_texts: dict , qrels: dict ) -> dict:
   return rtn
 
 def get_k_score(dot_texts: dict , rels: set , k : int =100) -> int:
+  """
+  Calcul the k score of the query with the relations rels
+  """
   dot_lst = {key: value for key, value in sorted(dot_texts.items(), key=lambda item: item[1], reverse=True)[:k]}
 
   lst = list(dot_lst.keys())
@@ -173,13 +176,16 @@ def get_k_score(dot_texts: dict , rels: set , k : int =100) -> int:
 
 
 def dot_product(text_embendings: List, query_embending) -> List:
+  """
+  Make a dot product between all embended texts and the query
+  """
   return [sentence_transformers_util.dot_score(query_embending, text_embending) for text_embending in text_embendings]
 
 
-"""
-This function does the same thing as get_k_average using the faiss library
-"""
 def get_k_average_faiss(emb_queries: dict, emb_texts: dict, qrels: dict, top_k_hits: int, index) -> dict:
+  """
+  This function does the same thing as get_k_average using the faiss library
+  """
   faiss_pred = {}
 
   with tqdm(total=(len(emb_queries))) as pbar:
