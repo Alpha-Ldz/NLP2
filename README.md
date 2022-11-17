@@ -19,3 +19,5 @@ The architecture of our repo is as follows:
 │   └── README.md
 └── README.md
 ```
+Massil Ferhani, 
+Pierre-Louis Landouzi
