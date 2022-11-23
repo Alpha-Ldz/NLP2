@@ -17,6 +17,8 @@ The architecture of our repo is as follows:
 │   ├── lab3.ipynb
 │   ├── lab3.py
 │   └── README.md
+├── Lab4
+│   ├── lab4.ipynb
 └── README.md
 ```
 Massil Ferhani, 
